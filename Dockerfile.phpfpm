@@ -10,7 +10,8 @@ RUN apk add --update \
 	libxml2-dev \
 	libzip-dev \
 	openssh-client \
-	icu-dev
+	icu-dev \
+        git
 RUN apk add --update \
         php81-json \
         php81-mysqli php81-pdo_mysql \
@@ -25,6 +26,9 @@ RUN docker-php-ext-install exif bcmath pdo_mysql pcntl \
  && docker-php-ext-install gd \
  && docker-php-ext-install intl \
  && docker-php-ext-install zip
+
+WORKDIR /srv/extensions
+RUN git clone https://github.com/sigbertklinke/Iframe
 
 #RUN printf "\n" | pecl install \
 #		imagick && \
