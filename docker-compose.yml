@@ -70,4 +70,3 @@ services:
       database:
         aliases:
           - database ## This name is used in wiki/LocalSettings.php
-
