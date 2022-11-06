@@ -1,0 +1,12 @@
+{
+  http_port 80
+}
+
+http://{$WIKI_FQDN} {
+  root * /srv
+  php_fastcgi phpfpm:9000
+  file_server
+  encode gzip zstd
+}
+
+

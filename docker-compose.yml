@@ -1,0 +1,73 @@
+version: "3.7"
+
+networks:
+  proxy:
+    name: ${NETWORK_NAME}
+    external: true
+  database:  ### The database has its own private network connection
+    name: database
+
+volumes:
+  app:
+    name: wiki-app
+  wiki:
+    name: wiki-static
+  database:
+    name: wiki-db
+
+services:
+  # Refer to the section "Labels to Caddyfile"
+  # in here https://github.com/lucaslorentz/caddy-docker-proxy
+  wiki:
+    container_name: wiki
+    image: caddy:latest
+    environment:
+      TZ: 'America/Los_Angeles'
+    labels:
+      caddy: $WIKI_FQDN
+      #caddy.tls.ca: "https://acme-staging-v02.api.letsencrypt.org/directory" # Needed only for testing.
+      caddy.reverse_proxy: "{{upstreams 80}}" #### needed to tell caddy which port number should send traffic
+      caddy.tls.protocols: "tls1.3" #### This is optional. Default it is tls1.2
+      caddy.tls.dns: "cloudflare ${CLOUDFLARE_API_TOKEN}"
+    volumes:
+      - ./Caddyfile.wiki:/etc/caddy/Caddyfile
+      - app:/srv:ro
+      - wiki:/var/www/html:ro
+    networks:
+      - proxy
+    restart: unless-stopped
+    depends_on:
+      - phpfpm
+
+  phpfpm:
+    container_name: phpfpm
+    build: 
+      context: .
+      dockerfile: Dockerfile.phpfpm
+    volumes:
+      - app:/srv:rw
+      - wiki:/var/www/html:ro
+    networks:
+      database:
+      proxy:
+        aliases:
+          - phpfpm
+    restart: unless-stopped
+        
+  database:
+    container_name: wikidb
+    image: mariadb:latest
+    environment:
+      # @see https://phabricator.wikimedia.org/source/mediawiki/browse/master/includes/DefaultSettings.php
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - database:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      database:
+        aliases:
+          - database ## This name is used in wiki/LocalSettings.php
+
