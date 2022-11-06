@@ -49,5 +49,8 @@ RUN tar xz --strip-components=1 -f mediawiki.tar.gz \
 
 ADD phpinfo.php .
 
-VOLUME [ "/srv" ]
+RUN adduser --uid=1000 --system phpfpm
+USER phpfpm
 
+VOLUME [ "/srv" ]
+VOLUME [ "/srv/images" ]

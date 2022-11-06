@@ -10,8 +10,8 @@ networks:
 volumes:
   app:
     name: wiki-app
-  wiki:
-    name: wiki-static
+  images:
+    name: wiki-images
   database:
     name: wiki-db
 
@@ -32,7 +32,7 @@ services:
     volumes:
       - ./Caddyfile.wiki:/etc/caddy/Caddyfile
       - app:/srv:ro
-      - wiki:/var/www/html:ro
+      - images:/srv/images:ro
     networks:
       - proxy
     restart: unless-stopped
@@ -46,7 +46,7 @@ services:
       dockerfile: Dockerfile.phpfpm
     volumes:
       - app:/srv:rw
-      - wiki:/var/www/html:ro
+      - images:/srv/images:rw
     networks:
       database:
       proxy:
