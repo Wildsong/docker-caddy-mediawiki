@@ -77,12 +77,12 @@ which means they are not compatible.
 ### Run update
 
 ```bash
-docker exec --it phpfpm bash
+docker exec -it phpfpm sh
 cd /srv/maintenance
 php update.php
 ```
 
-I went from 1.30 to the latest (1.38.4) and it worked. Took 15 seconds.
+I went from 1.30 to the latest (1.38.4) and it worked. Took 15s on Bellman, on 24s Tektonic.
 
 ## Resources
 
