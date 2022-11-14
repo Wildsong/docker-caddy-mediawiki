@@ -8,6 +8,9 @@ This project uses Docker Compose to run the components needed by Mediawiki:
 * PHPFPM as the PHP server
 * Mariadb as the database
 
+I am using PHP 8.1 and it's not working 100% with the released version of mediawiki,
+I am going to live with it until mediawiki catches up. It is easier than backpedaling to PHP 7.
+
 I use Caddy as the webserver because I am using a Caddy reverse proxy.
 I am trying to keep things Caddy based. No real reason for this. I've also used
 the mediawiki docker which is based on Apache and I've run one on nginx.
