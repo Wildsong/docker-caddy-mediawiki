@@ -32,7 +32,7 @@ services:
     volumes:
       - ./Caddyfile.wiki:/etc/caddy/Caddyfile
       - app:/srv:ro
-      - images:/srv/images:ro
+      - images:/srv/images:rw
     networks:
       - proxy
     restart: unless-stopped
@@ -41,6 +41,8 @@ services:
 
   phpfpm:
     container_name: phpfpm
+    # Shared with HuPI
+    image: phpfpm
     build: 
       context: .
       dockerfile: Dockerfile.phpfpm
