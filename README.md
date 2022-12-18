@@ -1,5 +1,8 @@
 # docker-caddy-mediawiki
 
+wiki.wildsong.biz and hupi.org
+NOTE NOTE NOTE The hupi server is here too.
+
 Mediawiki running in Docker, set up for use with a Caddy reverse proxy.
 
 This project uses Docker Compose to run the components needed by Mediawiki:
@@ -15,6 +18,8 @@ I use Caddy as the webserver because I am using a Caddy reverse proxy.
 I am trying to keep things Caddy based. No real reason for this. I've also used
 the mediawiki docker which is based on Apache and I've run one on nginx.
 They all work fine.
+
+
 
 ## Deployment
 

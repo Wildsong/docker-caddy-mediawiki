@@ -39,9 +39,31 @@ services:
     depends_on:
       - phpfpm
 
+  hupi:
+    container_name: hupi
+    image: caddy:latest
+    environment:
+      TZ: 'America/Los_Angeles'
+    labels:
+      caddy: ${HUPI_FQDN} #### needed for caddy to redirect traffic
+      #caddy.servers.protocols: "experimental_http3" #### For HTTP/3
+      #caddy.tls.ca: "https://acme.zerossl.com/v2/DV90" ### Only if you will prefer ZeroSSL. Default it is Let's Encypt.
+      #caddy.tls.ca: "https://acme-staging-v02.api.letsencrypt.org/directory" # Needed only for testing purpose. Remove this line after you finished your tests.
+      caddy.reverse_proxy: "{{upstreams}}" 
+      caddy.tls.protocols: "tls1.3" #### This is optional. Default it is tls1.2
+      caddy.tls.dns: "cloudflare ${CLOUDFLARE_API_TOKEN}"
+    volumes:
+      - ./Caddyfile.hupi:/etc/caddy/Caddyfile:ro
+      - /home/hupi/content:/srv:ro #### content to be served
+    networks:
+      - proxy
+    restart: unless-stopped
+    depends_on:
+      - phpfpm
+
   phpfpm:
     container_name: phpfpm
-    # Shared with HuPI
+    # Image is shared with HuPI
     image: phpfpm
     build: 
       context: .
