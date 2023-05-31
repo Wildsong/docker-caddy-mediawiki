@@ -31,8 +31,8 @@ services:
       caddy.tls.dns: "cloudflare ${CLOUDFLARE_API_TOKEN}"
     volumes:
       - ./Caddyfile.wiki:/etc/caddy/Caddyfile
-      - app:/srv:ro
-      - images:/srv/images:rw
+      - app:/srv/wiki:ro
+      - images:/srv/wiki/images:rw
     networks:
       - proxy
     restart: unless-stopped
@@ -54,7 +54,7 @@ services:
       caddy.tls.dns: "cloudflare ${CLOUDFLARE_API_TOKEN}"
     volumes:
       - ./Caddyfile.hupi:/etc/caddy/Caddyfile:ro
-      - /home/hupi/content:/srv:ro #### content to be served
+      - /home/hupi/content:/srv/hupi:ro #### content to be served
     networks:
       - proxy
     restart: unless-stopped
@@ -63,21 +63,22 @@ services:
 
   phpfpm:
     container_name: phpfpm
-    # Image is shared with HuPI
     image: phpfpm
     build: 
       context: .
       dockerfile: Dockerfile.phpfpm
     volumes:
-      - app:/srv:rw
-      - images:/srv/images:rw
+      - ./php-fpm.d:/usr/local/etc/php-fpm.d:ro
+      - app:/srv/wiki:ro
+      - images:/srv/wiki/images:rw
+      - /home/hupi/content:/srv/hupi:ro
     networks:
       database:
       proxy:
         aliases:
           - phpfpm
     restart: unless-stopped
-        
+
   database:
     container_name: wikidb
     image: mariadb:latest

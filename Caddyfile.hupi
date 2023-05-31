@@ -1,11 +1,13 @@
 {
   http_port 80
+  auto_https off
 }
 
 http://{$HUPI_FQDN} {
-  root * /srv
-  php_fastcgi phpfpm:9000
+  root * /srv/hupi
+  php_fastcgi phpfpm:9001
   file_server
   encode gzip zstd
 }
- 
+
+log
