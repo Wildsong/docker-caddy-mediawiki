@@ -1,12 +1,9 @@
-version: "3.7"
-
-networks:
-  proxy:
-    name: ${NETWORK_NAME}
-    external: true
-  database:  ### The database has its own private network connection
-    name: database
-
+configs:
+  wiki_config:
+    file: $PWD/Caddyfile.wiki
+  hupi_config:
+    file: $PWD/Caddyfile.hupi
+  
 volumes:
   app:
     name: wiki-app
@@ -16,53 +13,37 @@ volumes:
     name: wiki-db
 
 services:
-  # Refer to the section "Labels to Caddyfile"
-  # in here https://github.com/lucaslorentz/caddy-docker-proxy
   wiki:
-    container_name: wiki
     image: caddy:latest
     environment:
       TZ: 'America/Los_Angeles'
-    labels:
-      caddy: $WIKI_FQDN
-      #caddy.tls.ca: "https://acme-staging-v02.api.letsencrypt.org/directory" # Needed only for testing.
-      caddy.reverse_proxy: "{{upstreams 80}}" #### needed to tell caddy which port number should send traffic
-      caddy.tls.protocols: "tls1.3" #### This is optional. Default it is tls1.2
-      caddy.tls.dns: "cloudflare ${CLOUDFLARE_API_TOKEN}"
+    configs:
+      - source: wiki_config
+        target: /etc/caddy/Caddyfile
     volumes:
-      - ./Caddyfile.wiki:/etc/caddy/Caddyfile
+#      - ./Caddyfile.wiki:/etc/caddy/Caddyfile
       - app:/srv/wiki:ro
       - images:/srv/wiki/images:rw
-    networks:
-      - proxy
+    ports:
+      - 81:80
     restart: unless-stopped
     depends_on:
       - phpfpm
 
   hupi:
-    container_name: hupi
     image: caddy:latest
     environment:
       TZ: 'America/Los_Angeles'
-    labels:
-      caddy: ${HUPI_FQDN} #### needed for caddy to redirect traffic
-      #caddy.servers.protocols: "experimental_http3" #### For HTTP/3
-      #caddy.tls.ca: "https://acme.zerossl.com/v2/DV90" ### Only if you will prefer ZeroSSL. Default it is Let's Encypt.
-      #caddy.tls.ca: "https://acme-staging-v02.api.letsencrypt.org/directory" # Needed only for testing purpose. Remove this line after you finished your tests.
-      caddy.reverse_proxy: "{{upstreams}}" 
-      caddy.tls.protocols: "tls1.3" #### This is optional. Default it is tls1.2
-      caddy.tls.dns: "cloudflare ${CLOUDFLARE_API_TOKEN}"
+    configs:
+      - source: hupi_config
+        target: /etc/caddy/Caddyfile
     volumes:
-      - ./Caddyfile.hupi:/etc/caddy/Caddyfile:ro
+#      - ./Caddyfile.hupi:/etc/caddy/Caddyfile:ro
       - /home/hupi/content:/srv/hupi:ro #### content to be served
-    networks:
-      - proxy
-    restart: unless-stopped
-    depends_on:
-      - phpfpm
+    ports:
+      - 82:80
 
   phpfpm:
-    container_name: phpfpm
     image: phpfpm
     build: 
       context: .
@@ -72,11 +53,6 @@ services:
       - app:/srv/wiki:ro
       - images:/srv/wiki/images:rw
       - /home/hupi/content:/srv/hupi:ro
-    networks:
-      database:
-      proxy:
-        aliases:
-          - phpfpm
     restart: unless-stopped
 
   database:
@@ -90,8 +66,3 @@ services:
       MYSQL_RANDOM_ROOT_PASSWORD: "yes"
     volumes:
       - database:/var/lib/mysql
-    restart: unless-stopped
-    networks:
-      database:
-        aliases:
-          - database ## This name is used in wiki/LocalSettings.php
